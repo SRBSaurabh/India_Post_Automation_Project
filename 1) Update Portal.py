@@ -1,14 +1,10 @@
 import os
-import sys
 import time
 import shutil
 import sqlite3
-import threading
-import tkinter as tk
 from urllib.request import urlopen
 from datetime import date, datetime
 from timeit import default_timer as timer
-from tkinter import simpledialog, messagebox
 
 try:
     import cv2
@@ -20,6 +16,7 @@ try:
     from PIL import Image
     from colorama import Fore, Back, Style
     from selenium import webdriver
+    from webdriver_manager.chrome import ChromeDriverManager
     from selenium.webdriver.chrome.options import Options
     from tqdm import tqdm
     from playsound import playsound
@@ -128,7 +125,7 @@ url = 'https://dopagent.indiapost.gov.in/corp/AuthenticationController?FORMSGROU
           '&__START_TRAN_FLAG__=Y&__FG_BUTTONS__=LOAD&ACTION.LOAD=Y&AuthenticationFG.LOGIN_FLAG=3&BANK_ID=DOP' \
           '&AGENT_FLAG=Y '
 try:
-    browser = webdriver.Chrome(options=option)
+    browser = webdriver.Chrome(ChromeDriverManager().install(), options=option)
     browser.get(url)
     print(ColoredPrint('Opening India Post in Background.....', Fore.LIGHTBLUE_EX))
 except Exception as eo:

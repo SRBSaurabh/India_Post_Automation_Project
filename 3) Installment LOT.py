@@ -1,7 +1,6 @@
 import openpyxl
 import shutil
 import os
-import sys
 import sqlite3
 import pyttsx3
 import threading
@@ -14,8 +13,9 @@ from PIL import Image
 from colorama import Fore, Back, Style
 from datetime import date, datetime
 from timeit import default_timer as timer
-from tkinter import simpledialog, messagebox, ttk
+from tkinter import messagebox, ttk
 from selenium import webdriver
+from webdriver_manager.chrome import ChromeDriverManager
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.options import Options
 from tqdm import tqdm
@@ -295,7 +295,7 @@ def web():
           '&__START_TRAN_FLAG__=Y&__FG_BUTTONS__=LOAD&ACTION.LOAD=Y&AuthenticationFG.LOGIN_FLAG=3&BANK_ID=DOP' \
           '&AGENT_FLAG=Y '
     try:
-        browser = webdriver.Chrome(options=option)
+        browser = webdriver.Chrome(ChromeDriverManager().install(), options=option)
         browser.minimize_window()
         browser.get(url)
         print(ColoredPrint('Opening India Post in Background.....', Fore.LIGHTBLUE_EX))
