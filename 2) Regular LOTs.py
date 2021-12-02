@@ -281,13 +281,14 @@ def web():
     option.add_experimental_option("prefs", preferences)
     option.add_argument("--log-level=3")
     option.add_argument("--headless")  # =========to make headless
+    option.page_load_strategy = 'eager'
     option.add_argument("--window-size=1280,720")
 
     url = 'https://dopagent.indiapost.gov.in/corp/AuthenticationController?FORMSGROUP_ID__=AuthenticationFG' \
           '&__START_TRAN_FLAG__=Y&__FG_BUTTONS__=LOAD&ACTION.LOAD=Y&AuthenticationFG.LOGIN_FLAG=3&BANK_ID=DOP' \
           '&AGENT_FLAG=Y '
     try:
-        browser = webdriver.Chrome(ChromeDriverManager().install(), options=option)
+        browser = webdriver.Chrome(options=option)
         browser.get(url)
         print(ColoredPrint('Opening India Post in Background.....', Fore.LIGHTBLUE_EX))
     except Exception as eo:
@@ -309,14 +310,14 @@ def web():
                 browser.find_element_by_id('IMAGECAPTCHA').screenshot('captcha.png')
                 cap = recCaptcha('captcha.png')
 
-            time.sleep(1.2)
+            time.sleep(1)
             browser.find_element_by_id('IMAGECAPTCHA').screenshot('captchaaa.png')
             cap = recCaptcha('captchaaa.png')
             print(cap)
             browser.find_element_by_id('AuthenticationFG.VERIFICATION_CODE').clear()
-            time.sleep(0.5)
+            browser.implicitly_wait(3)
             browser.find_element_by_id('AuthenticationFG.VERIFICATION_CODE').send_keys(cap)
-            time.sleep(2)
+            browser.implicitly_wait(5)
             browser.find_element_by_id('VALIDATE_RM_PLUS_CREDENTIALS_CATCHA_DISABLED').click()
             os.remove("captchaaa.png")
             os.remove("captcha.png")
@@ -374,6 +375,7 @@ def web():
     t3.start()
     t1.start()
 
+    print('Going inside Agent Enquire & Update Screen...')
     browser.find_element_by_id('Agent Enquire & Update Screen').click()
     print("We Are Waiting... In The 'INDIA POST'    (^_^)")
     t1.join()
