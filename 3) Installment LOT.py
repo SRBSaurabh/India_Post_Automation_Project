@@ -143,7 +143,7 @@ def user():
     # Excel Path
     wb = openpyxl.load_workbook(r"Portal.xlsx", read_only=True, data_only=True)
 
-    # getting data from frontend and unpacking it
+    # getting data from Frontend and Unpacking it
     sht, rows = frontEnd()
     try:
         int(sht)

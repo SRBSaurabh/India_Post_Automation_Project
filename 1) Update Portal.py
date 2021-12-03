@@ -217,7 +217,6 @@ try:
     browser.switch_to.window(new_tab)
     link = browser.current_url
 except Exception as e:
-    # print(ColoredPrint(f'Internet / Website is BUSY.....!!\n{e}', Fore.LIGHTRED_EX))
     quit(ColoredPrint(f'Internet / Website is BUSY.....!!\n{e}', Fore.LIGHTRED_EX))
 
 st = timer()

@@ -43,7 +43,6 @@ lot_lis, inst_no = None, 0
 
 
 def frontEnd():
-
     def onClick():
         global lot_lis, inst_no
         lot_lis = entry1.get()
@@ -247,8 +246,9 @@ def user():
                     reg_cnt += 1
                     installments_total.append(amt * 1)
 
-            print(f'{Fore.LIGHTRED_EX}\n\t\t{Fore.LIGHTGREEN_EX}@@@@@ ==>> "Total A/c Numbers":        "{len(zoo)} accounts", '
-                  f'\n\t\t@@@@@ ==>> "Regular Installment" A/c:  "{reg_cnt} accounts" Of total------> > "Rs. {reg_sum}"')
+            print(
+                f'{Fore.LIGHTRED_EX}\n\t\t{Fore.LIGHTGREEN_EX}@@@@@ ==>> "Total A/c Numbers":        "{len(zoo)} accounts", '
+                f'\n\t\t@@@@@ ==>> "Regular Installment" A/c:  "{reg_cnt} accounts" Of total------> > "Rs. {reg_sum}"')
             print(f'{Back.MAGENTA}{Style.BRIGHT}'
                   f'Total Installment SUM of all Pending + Regular + Advance is = Rupees {sum(installments_total):,}/-')
             v += 1
@@ -259,6 +259,34 @@ def user():
     view_accounts()
     instant = list(zip(lot_names, inst_verify))
     check = [ek for ek in instant]
+    # **************   Check if SAME account appears in another LOT...!!   **************
+    temp_lis = []
+    for Lot_name in lot_names:
+        if Lot_name[0].upper() == 'A':
+            sht = 1
+        else:
+            sht = 2
+        item = int(Lot_name[1:])
+
+        if int(sht) == 1:
+            a = 'First'
+            sh1 = wb["First"]
+        elif int(sht) == 2:
+            b = 'Second'
+            sh1 = wb["Second"]
+        cell = 'C' + str(item)
+        temp_lis.append(sh1[cell].value)
+
+    wb.close()
+
+    new = [i.strip() for i in ','.join(temp_lis).split(',')]
+
+    print(f'\n\nAccounts which are Repeated in {lot_names} are:')
+    repeats = set([i for i in new if new.count(i) > 1])
+    if repeats:
+        print(f"{Fore.LIGHTRED_EX}{Style.BRIGHT} Repeated accounts Found: {repeats}")
+    else:
+        print(f"{Fore.LIGHTGREEN_EX}{Style.BRIGHT}Good....since, NO Repeated accounts were Found here....!!")
 
     answer = messagebox.askyesno("Question", f"{verified}\n Before Installments.....\n\n** After Installments "
                                              f"Verification : \n'-->{check}'\n\n\nDo you wants to proceed further ? ?")
@@ -410,8 +438,6 @@ def web():
 
         except NameError:
             pass
-        # finally:
-        #     print("Done Selection")
         browser.implicitly_wait(7)
         browser.find_element_by_id('Button26553257').click()
         browser.find_element_by_id('Button11874602').click()
@@ -456,7 +482,8 @@ def web():
             browser.find_element_by_id('CustomAgentRDAccountFG.EBANKING_REF_NUMBER').clear()
             z += 1
         except Exception as ee:
-            print(ColoredPrint(" Unable to Search the Report" + str(nums) + "  !!!!!!!!!!!\n" + str(ee), Fore.LIGHTRED_EX))
+            print(ColoredPrint(" Unable to Search the Report" + str(nums) + "  !!!!!!!!!!!\n" + str(ee),
+                               Fore.LIGHTRED_EX))
             time.sleep(1.5)
     print(ColoredPrint("All 'Reports Downloaded' SUCCESSFULLY........!!!     :)  :)  :)", Fore.LIGHTGREEN_EX))
     time.sleep(0.25)
@@ -486,8 +513,8 @@ t3 = threading.Thread(target=music)
 t2.start()
 t2.join()
 
-# #1.start()
-# #t1.join()
+## t1.start()
+## t1.join()
 
 end = timer()  # Ends after 2nd thread
 if not w8 == 1:
