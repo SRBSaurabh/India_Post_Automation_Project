@@ -1,5 +1,5 @@
 beautifulsoup4==4.9.3
-webdriver-manager==3.5.1
+chromedriver-binary==92.0.4515.43.0
 colorama==0.4.4
 matplotlib==3.4.2
 matplotlib-inline==0.1.2
