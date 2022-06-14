@@ -5,6 +5,7 @@ import sqlite3
 from urllib.request import urlopen
 from datetime import date, datetime
 from timeit import default_timer as timer
+from SRB_funcs import ColoredPrint, portal_Login
 
 try:
     import cv2
@@ -12,11 +13,10 @@ try:
     import pytesseract
     import openpyxl
     import pandas as pd
-    import colorama
     from PIL import Image
+    import colorama
     from colorama import Fore, Back, Style
     from selenium import webdriver
-    from webdriver_manager.chrome import ChromeDriverManager
     from selenium.webdriver.chrome.options import Options
     from tqdm import tqdm
     from playsound import playsound
@@ -26,7 +26,7 @@ except Exception as ex:
     os.system('pip install -r requirements.txt')
     print("\n\n"
           "=======================================================================================================\n\n"
-          "                          @ Necessary 'FIRST Time' - Additional Requirements Installed ..! !                 \n\n"
+          "@ Necessary 'FIRST Time' - Additional Requirements Installed ..! !                 \n\n "
           "                     (^_^)    Please Restart the Program Once Again ..! !                \n\n"
           "=======================================================================================================\n\n")
 
@@ -35,6 +35,7 @@ except Exception as ex:
 
 print('@@@@@@@@@____________Fully Developed By "Saurabh Chaudhari" ______ :)')
 # Chrome Download Path
+chrome_path = os.getcwd()
 sss = timer()
 today = date.today().strftime("%d-%m-%Y")
 opn = (date.today() - pd.DateOffset(months=12 * 5)).strftime("%Y-%m-%d")
@@ -44,7 +45,7 @@ colorama.init(autoreset=True)
 Current_Year = YYYY
 Current_Month = datetime.now().strftime("%b")
 Current_month_num = MM
-a, b = [], []
+a, b, c, d, e, f, g, h = [], [], [], [], [], [], [], []
 
 # Previous RD-Interest Rates with FORMAT Of
 # Opening | Closing | Interest | 60-Months | 120-Months
@@ -83,141 +84,26 @@ cal = {"Jan": "01",
 
 dtStamp = datetime.now().strftime("%d-%m-%Y  %H:%M:%S")
 
+"""Login into India Post-WebPortal"""
+browser, Msg, Days, Date = portal_Login()
 
-def ColoredPrint(msg, color):
-    colorama.init(autoreset=True)
-
-    return (f"{color}{Style.BRIGHT}\n\n\n"
-            "---------*********************************************************************************-----------\n\n"
-            f"{Fore.LIGHTMAGENTA_EX}{Style.BRIGHT}                       {msg}                  \n\n"
-            f"{color}{Style.BRIGHT}"
-            f"---------********************************************************************************-----------\n\n")
-
-
-def recCaptcha(img_path):
-    result = None
-    # Read image with opencv
-    img = cv2.imread(img_path)
-    # Convert to gray
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    cv2.imwrite("clear.png", img)
-    result = pytesseract.image_to_string(Image.open("clear.png"))
-    os.remove("clear.png")
-    return result[:-2]
-
-
-# Getting Id & Password...
-wb = openpyxl.load_workbook(r"Portal.xlsx", read_only=True, data_only=True)
-sheet = wb["Summary"]
-password = sheet['J1'].value
-identity = sheet['Z1'].value
-wb.close()
-
-# Browser Setup & WebPage Loading...
-option = Options()
-preferences = {"download.default_directory": os.getcwd(), "safebrowsing.enabled": "false"}  # Chrome download Path
-option.add_experimental_option("prefs", preferences)
-option.add_argument("--log-level=3")
-option.add_argument("--headless")  # =========to make headless
-option.page_load_strategy = 'eager'
-option.add_argument("--window-size=1280,720")
-
-url = 'https://dopagent.indiapost.gov.in/corp/AuthenticationController?FORMSGROUP_ID__=AuthenticationFG' \
-          '&__START_TRAN_FLAG__=Y&__FG_BUTTONS__=LOAD&ACTION.LOAD=Y&AuthenticationFG.LOGIN_FLAG=3&BANK_ID=DOP' \
-          '&AGENT_FLAG=Y '
-try:
-    browser = webdriver.Chrome(options=option)
-    browser.get(url)
-    print(ColoredPrint('Opening India Post in Background.....', Fore.LIGHTBLUE_EX))
-except Exception as eo:
-    print(ColoredPrint('Internet Problem\n\n --> >' + str(eo), Fore.LIGHTRED_EX))
-    time.sleep(5)
-    quit()
-
-try:
-    browser.find_element_by_id('AuthenticationFG.USER_PRINCIPAL').send_keys(identity)
-    browser.find_element_by_id('AuthenticationFG.ACCESS_CODE').send_keys(password)
-
-    try:
-        browser.find_element_by_id('IMAGECAPTCHA').screenshot('captcha.png')
-        cap = recCaptcha('captcha.png')
-
-        while len(cap) > 6 or sum([i not in 'ABCDEFGHKLMNPRTUVWXYabdfhkmnpqrtuwxy2345678' for i in cap]) > 0:
-            os.remove("captcha.png")
-            browser.find_element_by_id('TEXTIMAGE').click()
-            browser.find_element_by_id('IMAGECAPTCHA').screenshot('captcha.png')
-            cap = recCaptcha('captcha.png')
-
-        time.sleep(0.5)
-        browser.find_element_by_id('IMAGECAPTCHA').screenshot('captchaaa.png')
-        cap = recCaptcha('captchaaa.png')
-        print(cap)
-        browser.find_element_by_id('AuthenticationFG.VERIFICATION_CODE').clear()
-        browser.implicitly_wait(5)
-        browser.find_element_by_id('AuthenticationFG.VERIFICATION_CODE').send_keys(cap)
-        time.sleep(1.2)
-        browser.find_element_by_id('VALIDATE_RM_PLUS_CREDENTIALS_CATCHA_DISABLED').click()
-        os.remove("captchaaa.png")
-        os.remove("captcha.png")
-        browser.implicitly_wait(8)
-        # Assign aa, bb just for the sake of password timeline
-        aa = browser.find_element_by_id('signOnpwd').get_attribute('innerText')
-        bb = browser.find_element_by_id('HREF_DashboardFG.LOGIN_EXPIRY_DAYS').get_attribute('innerText')
-        print(
-            f"{'Login Successful..!'}\n\n   {Fore.LIGHTRED_EX}{Style.BRIGHT}{aa}------------------ > > > {Fore.LIGHTGREEN_EX}{Style.BRIGHT}{bb}\n\n")
-    except:
-        try:
-            browser.close()
-            try:
-                browser = webdriver.Chrome(options=option)
-                browser.get(url)
-            except Exception as e:
-                print(ColoredPrint('Internet Problem\n\n --> >' + str(e), Fore.LIGHTRED_EX))
-                time.sleep(5)
-                quit()
-
-            print('Varify "CAPTCHA" Manually...!!!')
-            browser.find_element_by_id('AuthenticationFG.USER_PRINCIPAL').send_keys(identity)
-            browser.find_element_by_id('AuthenticationFG.ACCESS_CODE').send_keys(password)
-            browser.find_element_by_id('IMAGECAPTCHA').screenshot('captcha.png')
-            cap = recCaptcha('captcha.png')
-
-            print(ColoredPrint(cap, Fore.LIGHTRED_EX))
-            Image.open('captcha.png').show()
-            captcha = input('Enter the "CAPTCH" here --> ')
-            if len(captcha) < 1:
-                pass
-            else:
-                cap = captcha
-            print(ColoredPrint(cap, Fore.LIGHTGREEN_EX))
-            browser.implicitly_wait(5)
-            browser.find_element_by_id('AuthenticationFG.VERIFICATION_CODE').send_keys(cap)
-            browser.implicitly_wait(5)
-            browser.find_element_by_id('VALIDATE_RM_PLUS_CREDENTIALS_CATCHA_DISABLED').click()
-            os.remove("captcha.png")
-            browser.implicitly_wait(12)
-            # Assign aa, bb just for the sake of password timeline
-            aa = browser.find_element_by_id('signOnpwd').get_attribute('innerText')
-            bb = browser.find_element_by_id('HREF_DashboardFG.LOGIN_EXPIRY_DAYS').get_attribute('innerText')
-            print(
-                f"{'Login Successful..!'}\n\n   {Fore.LIGHTRED_EX}{Style.BRIGHT}{aa}------------------ > > > {Fore.LIGHTGREEN_EX}{Style.BRIGHT}{bb}\n\n")
-        except Exception as e:
-            print(ColoredPrint('"Failed" Due to InCorrect CAPTCHA ... !!!', Fore.LIGHTRED_EX))
-            quit(e)
-
-    browser.find_element_by_id('Accounts').click()
-    print('Going inside Agent Enquire & Update Screen...')
-    browser.find_element_by_id('Agent Enquire & Update Screen').click()
-    print(ColoredPrint("We Are In The 'INDIA POST'    (^_^)", Fore.GREEN))
-    browser.implicitly_wait(8)
-    print('Updating....')
-    browser.find_element_by_id('NEXT_ACCOUNTS').click()
-    browser.find_element_by_id('printpreview').click()
-    new_tab = browser.window_handles[1]
-    browser.switch_to.window(new_tab)
-    link = browser.current_url
-except Exception as e:
-    quit(ColoredPrint(f'Internet / Website is BUSY.....!!\n{e}', Fore.LIGHTRED_EX))
+## To Update our DataBase
+time.sleep(.65)
+print('SRB')
+browser.find_element_by_id('Accounts').click()
+print('Going inside Agent Enquire & Update Screen...')
+browser.implicitly_wait(8)
+browser.find_element_by_id('Agent Enquire & Update Screen').click()
+print(ColoredPrint("We Are In The 'INDIA POST'    (^_^)", Fore.GREEN))
+browser.implicitly_wait(8)
+print('Updating our DataBase....')
+browser.find_element_by_id('NEXT_ACCOUNTS').click()
+browser.find_element_by_id('printpreview').click()
+new_tab = browser.window_handles[1]
+browser.switch_to.window(new_tab)
+link = browser.current_url
+print(link)
+# quit()
 
 st = timer()
 
@@ -226,11 +112,11 @@ conn = sqlite3.connect('Portal_Data.sqlite')
 cur = conn.cursor()
 cur.execute('DROP TABLE IF EXISTS Password')
 cur.execute('CREATE TABLE Password (Msg TEXT, Days TEXT, Date TEXT)')
-cur.execute('INSERT INTO Password(Msg, Days, Date) VALUES (?, ?, ?)', (aa, bb, dtStamp))
+cur.execute('INSERT INTO Password(Msg, Days, Date) VALUES (?, ?, ?)', (Msg, Days, Date))
 conn.commit()
 cur.close()
 
-# # to Update Portal
+# ## Cleaning & Analysing the Data coming from the LINK
 raw = urlopen(link).read()
 soup = BeautifulSoup(raw, 'html.parser')
 extract = (soup.get_text().split('\n'))
@@ -295,6 +181,7 @@ cur.execute('CREATE TABLE Portal (Account_No TEXT, Account_Name TEXT, Denominati
             'Next_Installment_Due_Date TEXT, Regular_Installment TEXT, Pending_Installment TEXT, '
             'Advance_Installment TEXT, Total_Return INTEGER, Int REAL, '
             'Day INTEGER, Month TEXT, Month_Num INTEGER, Year INTEGER)')
+
 for k0 in list(zip(a, b, c, d, e, f, g, h)):
     cur.execute('INSERT INTO Portal (Account_No, Account_Name, Denomination, Month_Paid_Upto, '
                 'Next_Installment_Due_Date, Day, Month, Year) VALUES (?,?,?,?,?,?,?,?)', k0)
@@ -382,7 +269,8 @@ cur.close()
 new = set(updated_accounts).difference(old_accounts)
 # print('Newly Added Accounts ===> ', list(new), len(set(new)))
 print(
-    ColoredPrint(f"No. Of 'NEW' Accounts 'Added' ---> {Fore.LIGHTGREEN_EX}{Style.BRIGHT}{len(new)}", Fore.LIGHTGREEN_EX),
+    ColoredPrint(f"No. Of 'NEW' Accounts 'Added' ---> {Fore.LIGHTGREEN_EX}{Style.BRIGHT}{len(new)}",
+                 Fore.LIGHTGREEN_EX),
     '\n\n')
 show_updates(new, Fore.LIGHTGREEN_EX)
 
@@ -420,8 +308,8 @@ except Exception as e:
 conn.commit()
 cur.close()
 
-print(f"{Fore.LIGHTMAGENTA_EX} DataBase Updated in Just:     '{ed - st}' Seconds")
-print(ColoredPrint(f"Fully  Completed in :'{ddd - sss}' Seconds", Fore.LIGHTGREEN_EX))
+print(f"{Fore.LIGHTMAGENTA_EX} DataBase Updated in Just:     '{round(ed - st)}' Seconds")
+print(ColoredPrint(f"Fully  Completed in :'{round(ddd - sss)}' Seconds", Fore.LIGHTGREEN_EX))
 
 # Completion Sound
 playsound('result.wav')
